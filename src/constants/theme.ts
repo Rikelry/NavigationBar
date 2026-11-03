@@ -1,65 +1,90 @@
-/**
- * Below are the colors that are used in the app. The colors are defined in the light and dark mode.
- * There are many other ways to style your app. For example, [Nativewind](https://www.nativewind.dev/), [Tamagui](https://tamagui.dev/), [unistyles](https://unistyl.es/), etc.
- */
+import { Platform, useColorScheme } from 'react-native';
+import { Color } from 'expo-router';
 
-import '@/global.css';
+export type AppTheme = {
+  primary: string;
+  onPrimary: string;
+  primaryContainer: string;
+  onPrimaryContainer: string;
+  secondaryContainer: string;
+  onSecondaryContainer: string;
+  background: string;
+  surface: string;
+  onSurface: string;
+  surfaceVariant: string;
+  onSurfaceVariant: string;
+  outline: string;
+};
 
-import { Platform } from 'react-native';
+const lightTheme: AppTheme = {
+  primary: '#6750A4',
+  onPrimary: '#FFFFFF',
 
-export const Colors = {
-  light: {
-    text: '#000000',
-    background: '#ffffff',
-    backgroundElement: '#F0F0F3',
-    backgroundSelected: '#E0E1E6',
-    textSecondary: '#60646C',
-  },
-  dark: {
-    text: '#ffffff',
-    background: '#000000',
-    backgroundElement: '#212225',
-    backgroundSelected: '#2E3135',
-    textSecondary: '#B0B4BA',
-  },
-} as const;
+  primaryContainer: '#EADDFF',
+  onPrimaryContainer: '#21005D',
 
-export type ThemeColor = keyof typeof Colors.light & keyof typeof Colors.dark;
+  secondaryContainer: '#E8DEF8',
+  onSecondaryContainer: '#1D192B',
 
-export const Fonts = Platform.select({
-  ios: {
-    /** iOS `UIFontDescriptorSystemDesignDefault` */
-    sans: 'system-ui',
-    /** iOS `UIFontDescriptorSystemDesignSerif` */
-    serif: 'ui-serif',
-    /** iOS `UIFontDescriptorSystemDesignRounded` */
-    rounded: 'ui-rounded',
-    /** iOS `UIFontDescriptorSystemDesignMonospaced` */
-    mono: 'ui-monospace',
-  },
-  default: {
-    sans: 'normal',
-    serif: 'serif',
-    rounded: 'normal',
-    mono: 'monospace',
-  },
-  web: {
-    sans: 'var(--font-display)',
-    serif: 'var(--font-serif)',
-    rounded: 'var(--font-rounded)',
-    mono: 'var(--font-mono)',
-  },
-});
+  background: '#FEF7FF',
+  surface: '#FEF7FF',
+  onSurface: '#1D1B20',
 
-export const Spacing = {
-  half: 2,
-  one: 4,
-  two: 8,
-  three: 16,
-  four: 24,
-  five: 32,
-  six: 64,
-} as const;
+  surfaceVariant: '#E7E0EC',
+  onSurfaceVariant: '#49454F',
 
-export const BottomTabInset = Platform.select({ ios: 50, android: 80 }) ?? 0;
-export const MaxContentWidth = 800;
+  outline: '#79747E',
+};
+
+const darkTheme: AppTheme = {
+  primary: '#D0BCFF',
+  onPrimary: '#381E72',
+
+  primaryContainer: '#4F378B',
+  onPrimaryContainer: '#EADDFF',
+
+  secondaryContainer: '#4A4458',
+  onSecondaryContainer: '#E8DEF8',
+
+  background: '#141218',
+  surface: '#141218',
+  onSurface: '#E6E0E9',
+
+  surfaceVariant: '#49454F',
+  onSurfaceVariant: '#CAC4D0',
+
+  outline: '#938F99',
+};
+
+export function useAppTheme(): AppTheme {
+  const colorScheme = useColorScheme();
+
+  const fallback =
+    colorScheme === 'dark' ? darkTheme : lightTheme;
+
+  if (Platform.OS !== 'android') {
+    return fallback;
+  }
+
+  const dynamic = Color.android.dynamic;
+
+  return {
+    primary: (dynamic.primary ?? fallback.primary) as unknown as string,
+    onPrimary: (dynamic.onPrimary ?? fallback.onPrimary) as unknown as string,
+
+    primaryContainer: (dynamic.primaryContainer ?? fallback.primaryContainer) as unknown as string,
+    onPrimaryContainer: (dynamic.onPrimaryContainer ?? fallback.onPrimaryContainer) as unknown as string,
+
+    secondaryContainer: (dynamic.secondaryContainer ?? fallback.secondaryContainer) as unknown as string,
+    onSecondaryContainer: (dynamic.onSecondaryContainer ?? fallback.onSecondaryContainer) as unknown as string,
+
+    background: (dynamic.background ?? fallback.background) as unknown as string,
+    surface: (dynamic.surface ?? fallback.surface) as unknown as string,
+    onSurface: (dynamic.onSurface ?? fallback.onSurface) as unknown as string,
+
+    surfaceVariant: (dynamic.surfaceVariant ?? fallback.surfaceVariant) as unknown as string,
+    onSurfaceVariant: (dynamic.onSurfaceVariant ?? fallback.onSurfaceVariant) as unknown as string,
+
+    outline: (dynamic.outline ?? fallback.outline) as unknown as string,
+  };
+}

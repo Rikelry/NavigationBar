@@ -54,3 +54,19 @@ Join our community of developers creating universal apps.
 
 - [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
 - [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+
+### Dependences
+
+| Dependences |
+| - |
+| expo-router |
+| react-native-safe-area-context |
+| react-native-screens |
+| react-native-reanimated |
+| @expo/vector-icons |
+| @react-navigation/bottom-tabs |
+
+1. Animação elástica (spring) no indicador.
+2. Transição suave entre ícones.
+3. Paleta Material You com suporte a Light e Dark Mode.
+4. Indicador expressivo animado que se movimenta entre os destinos.
