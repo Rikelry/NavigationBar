@@ -1,11 +1,31 @@
+import { useEffect, useState } from 'react';
+
+import {
+    LayoutChangeEvent,
+    View,
+    Pressable,
+    StyleSheet,
+    useWindowDimensions,
+} from 'react-native';
+
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { usePathname, useRouter } from 'expo-router';
-import { View, Text, Pressable, StyleSheet, useWindowDimensions, } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import Animated, { useSharedValue, useAnimatedStyle, withSpring, withSequence, withTiming, } from 'react-native-reanimated';
-import { useEffect } from 'react';
 
-import { useAppTheme, type AppTheme } from '@/constants/theme';
+import Animated, {
+    useSharedValue,
+    useAnimatedStyle,
+    withSpring,
+} from 'react-native-reanimated';
+
+import {
+    useAppTheme,
+    type AppTheme,
+} from '../../constants/theme';
+
+// --------------------------------------------------
+// CONFIGURAÇÃO DOS DESTINOS
+// --------------------------------------------------
 
 const tabs = [
     {
@@ -35,18 +55,43 @@ const tabs = [
 ] as const;
 
 // --------------------------------------------------
-// TAB ITEM
-// Animação individual de cada destino
+// CONSTANTES GEOMÉTRICAS
+// --------------------------------------------------
+
+const COMPACT_BREAKPOINT = 600;
+
+const BAR_HEIGHT = 64;
+
+const COMPACT_INDICATOR_WIDTH = 56;
+const COMPACT_INDICATOR_HEIGHT = 32;
+
+const HORIZONTAL_INDICATOR_HEIGHT = 56;
+
+// --------------------------------------------------
+// TIPOS
 // --------------------------------------------------
 
 type TabItemProps = {
     tab: (typeof tabs)[number];
     active: boolean;
-    onPress: () => void;
+    horizontal: boolean;
     colors: AppTheme;
+    onPress: () => void;
+    onLayout: (event: LayoutChangeEvent) => void;
 };
 
-function TabItem({ tab, active, onPress, colors }: TabItemProps) {
+// --------------------------------------------------
+// ITEM DE NAVEGAÇÃO
+// --------------------------------------------------
+
+function TabItem({
+    tab,
+    active,
+    horizontal,
+    colors,
+    onPress,
+    onLayout,
+}: TabItemProps) {
     const progress = useSharedValue(active ? 1 : 0);
 
     useEffect(() => {
@@ -55,9 +100,9 @@ function TabItem({ tab, active, onPress, colors }: TabItemProps) {
             stiffness: 180,
             mass: 0.7,
         });
-    }, [active]);
+    }, [active, progress]);
 
-    // Animação do ícone
+    // Escala do ícone
     const iconAnimatedStyle = useAnimatedStyle(() => ({
         transform: [
             {
@@ -66,7 +111,7 @@ function TabItem({ tab, active, onPress, colors }: TabItemProps) {
         ],
     }));
 
-    // Ícone inativo desaparece
+    // Ícone inativo
     const inactiveIconStyle = useAnimatedStyle(() => ({
         opacity: 1 - progress.value,
         transform: [
@@ -76,7 +121,7 @@ function TabItem({ tab, active, onPress, colors }: TabItemProps) {
         ],
     }));
 
-    // Ícone ativo aparece
+    // Ícone ativo
     const activeIconStyle = useAnimatedStyle(() => ({
         opacity: progress.value,
         transform: [
@@ -86,15 +131,12 @@ function TabItem({ tab, active, onPress, colors }: TabItemProps) {
         ],
     }));
 
-    // Animação do label
+    // Label da configuração compacta
     const labelAnimatedStyle = useAnimatedStyle(() => ({
         opacity: progress.value,
         transform: [
             {
-                translateY: (1 - progress.value) * 5,
-            },
-            {
-                scale: 0.95 + progress.value * 0.05,
+                translateY: (1 - progress.value) * 4,
             },
         ],
     }));
@@ -102,17 +144,28 @@ function TabItem({ tab, active, onPress, colors }: TabItemProps) {
     return (
         <Pressable
             onPress={onPress}
+            onLayout={onLayout}
             accessibilityRole="button"
             accessibilityState={{ selected: active }}
             accessibilityLabel={tab.name}
-            style={styles.tab}
+            style={
+                horizontal
+                    ? styles.horizontalTab
+                    : styles.compactTab
+            }
         >
-            {/* Ícones com crossfade */}
+            {/* Ícones */}
             <Animated.View
-                style={[styles.iconContainer, iconAnimatedStyle]}
+                style={[
+                    styles.iconContainer,
+                    iconAnimatedStyle,
+                ]}
             >
                 <Animated.View
-                    style={[styles.iconLayer, inactiveIconStyle]}
+                    style={[
+                        styles.iconLayer,
+                        inactiveIconStyle,
+                    ]}
                 >
                     <MaterialCommunityIcons
                         name={tab.icon}
@@ -122,21 +175,34 @@ function TabItem({ tab, active, onPress, colors }: TabItemProps) {
                 </Animated.View>
 
                 <Animated.View
-                    style={[styles.iconLayer, activeIconStyle]}
+                    style={[
+                        styles.iconLayer,
+                        activeIconStyle,
+                    ]}
                 >
                     <MaterialCommunityIcons
                         name={tab.activeIcon}
                         size={24}
-                        color={colors.onPrimaryContainer}
+                        color={colors.onSecondaryContainer}
                     />
                 </Animated.View>
             </Animated.View>
 
-            {/* Label animado */}
+            {/* Label */}
             <Animated.Text
+                numberOfLines={1}
                 style={[
-                    styles.activeLabel,
-                    { color: colors.onSurface }
+                    horizontal
+                        ? styles.horizontalLabel
+                        : styles.compactLabel,
+
+                    {
+                        color: active
+                            ? colors.secondary
+                            : colors.onSurfaceVariant,
+                    },
+
+                    !horizontal && labelAnimatedStyle,
                 ]}
             >
                 {tab.name}
@@ -146,130 +212,241 @@ function TabItem({ tab, active, onPress, colors }: TabItemProps) {
 }
 
 // --------------------------------------------------
-// NAVIGATION BAR
+// NAVIGATION BAR EXPRESSIVE
 // --------------------------------------------------
 
+type ItemLayout = {
+    x: number;
+    width: number;
+};
 
 export function ExpressiveTabBar() {
     const router = useRouter();
-    const colors = useAppTheme();
     const pathname = usePathname();
+
+    const colors = useAppTheme();
     const insets = useSafeAreaInsets();
 
-    const { width: screenWidth } = useWindowDimensions();
+    const { width: windowWidth } = useWindowDimensions();
+
+    // A configuração muda automaticamente
+    // quando a largura da janela muda.
+    const horizontal = windowWidth >= COMPACT_BREAKPOINT;
 
     const activeIndex = Math.max(
         0,
-        tabs.findIndex((tab) => tab.path === pathname)
+        tabs.findIndex((tab) => tab.path === pathname),
     );
 
-    const tabWidth = (screenWidth - 24) / tabs.length;
+    // Guarda as dimensões reais dos destinos.
+    const [itemLayouts, setItemLayouts] = useState<
+        Record<string, ItemLayout>
+    >({});
 
-    const indicatorCenter = useSharedValue(
-        12 + activeIndex * tabWidth + tabWidth / 2
+    // Valores animados do indicador.
+    const indicatorX = useSharedValue(0);
+
+    const indicatorWidth = useSharedValue(
+        COMPACT_INDICATOR_WIDTH,
     );
 
-    const indicatorWidth = useSharedValue(64);
-
-    const indicatorScaleY = useSharedValue(1);
-
+    // Atualiza a posição e largura do indicador.
     useEffect(() => {
-        const targetCenter =
-            12 + activeIndex * tabWidth + tabWidth / 2;
+        const activeTab = tabs[activeIndex];
 
-        // Movimento horizontal do indicador
-        indicatorCenter.value = withSpring(targetCenter, {
-            damping: 16,
-            stiffness: 150,
-            mass: 0.6,
+        const layout = itemLayouts[activeTab.path];
+
+        if (!layout) return;
+
+        const targetWidth = horizontal
+            ? layout.width
+            : COMPACT_INDICATOR_WIDTH;
+
+        const targetX = horizontal
+            ? layout.x
+            : layout.x + (layout.width - targetWidth) / 2;
+
+        indicatorX.value = withSpring(targetX, {
+            damping: 18,
+            stiffness: 160,
+            mass: 0.7,
         });
 
-        // Alongamento expressivo durante a transição
-        indicatorWidth.value = withSequence(
-            withTiming(80, { duration: 100 }),
-            withSpring(64, {
-                damping: 12,
-                stiffness: 180,
-                mass: 0.6,
-            })
-        );
+        indicatorWidth.value = withSpring(targetWidth, {
+            damping: 18,
+            stiffness: 160,
+            mass: 0.7,
+        });
+    }, [
+        activeIndex,
+        horizontal,
+        itemLayouts,
+        indicatorX,
+        indicatorWidth,
+    ]);
 
-        indicatorScaleY.value = withSequence(
-            withTiming(0.88, { duration: 100 }),
-            withSpring(1, {
-                damping: 12,
-                stiffness: 180,
-            })
-        );
-    }, [activeIndex, tabWidth]);
-
+    // Estilo animado do indicador.
     const indicatorAnimatedStyle = useAnimatedStyle(() => ({
         width: indicatorWidth.value,
+
         transform: [
             {
-                translateX:
-                    indicatorCenter.value - indicatorWidth.value / 2,
-            },
-            {
-                scaleY: indicatorScaleY.value,
+                translateX: indicatorX.value,
             },
         ],
     }));
 
+    // Captura as dimensões de cada destino.
+    const handleItemLayout = (path: string) => (
+        event: LayoutChangeEvent,
+    ) => {
+        const { x, width } = event.nativeEvent.layout;
+
+        setItemLayouts((previous) => {
+            const current = previous[path];
+
+            // Evita atualizações desnecessárias.
+            if (
+                current &&
+                Math.abs(current.x - x) < 0.5 &&
+                Math.abs(current.width - width) < 0.5
+            ) {
+                return previous;
+            }
+
+            return {
+                ...previous,
+                [path]: {
+                    x,
+                    width,
+                },
+            };
+        });
+    };
+
+    const activeLayout = itemLayouts[tabs[activeIndex].path];
+
     return (
         <View
             style={[
-                styles.container,
+                styles.safeArea,
                 {
                     backgroundColor: colors.surface,
-                    paddingBottom: Math.max(insets.bottom, 12),
+                    paddingBottom: insets.bottom,
                 },
             ]}
         >
-            <Animated.View
-                pointerEvents="none"
+            <View
                 style={[
-                    styles.indicator,
-                    { backgroundColor: colors.primaryContainer },
-                    indicatorAnimatedStyle,
+                    styles.container,
+                    {
+                        backgroundColor: colors.surface,
+                    },
                 ]}
-            />
+            >
+                {/* Indicador ativo */}
+                {activeLayout && (
+                    <Animated.View
+                        pointerEvents="none"
+                        style={[
+                            styles.indicator,
 
-            {tabs.map((tab, index) => (
-                <TabItem
-                    key={tab.path}
-                    tab={tab}
-                    active={activeIndex === index}
-                    onPress={() => router.navigate(tab.path as never)}
-                    colors={colors}
-                />
-            ))}
+                            horizontal
+                                ? styles.horizontalIndicator
+                                : styles.compactIndicator,
+
+                            {
+                                backgroundColor: colors.primaryContainer,
+                            },
+
+                            indicatorAnimatedStyle,
+                        ]}
+                    />
+                )}
+
+                {/* Destinos */}
+                <View
+                    style={
+                        horizontal
+                            ? styles.horizontalItems
+                            : styles.compactItems
+                    }
+                >
+                    {tabs.map((tab, index) => (
+                        <TabItem
+                            key={tab.path}
+                            tab={tab}
+                            active={activeIndex === index}
+                            horizontal={horizontal}
+                            colors={colors}
+                            onLayout={handleItemLayout(tab.path)}
+                            onPress={() => {
+                                if (index !== activeIndex) {
+                                    router.navigate(tab.path as never);
+                                }
+                            }}
+                        />
+                    ))}
+                </View>
+            </View>
         </View>
     );
 }
 
+// --------------------------------------------------
+// ESTILOS
+// --------------------------------------------------
+
 const styles = StyleSheet.create({
+    safeArea: {
+        width: '100%',
+    },
+
     container: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        justifyContent: 'space-around',
-        backgroundColor: '#F7F3FF',
-        paddingTop: 12,
-        paddingHorizontal: 12,
+        height: BAR_HEIGHT,
+        width: '100%',
+        justifyContent: 'center',
         position: 'relative',
     },
 
-    tab: {
+    indicator: {
+        position: 'absolute',
+        left: 0,
+        zIndex: 0,
+    },
+
+    // ----------------------------------------------
+    // CONFIGURAÇÃO COMPACTA
+    // ----------------------------------------------
+
+    compactItems: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        width: '100%',
+        height: BAR_HEIGHT,
+    },
+
+    compactTab: {
         flex: 1,
+        height: BAR_HEIGHT,
         alignItems: 'center',
         justifyContent: 'center',
         gap: 4,
+        paddingVertical: 6,
         zIndex: 1,
+    },
+
+    compactIndicator: {
+        position: 'absolute',
+        top: 6,
+        left: 0,
+        height: COMPACT_INDICATOR_HEIGHT,
+        borderRadius: 16,
     },
 
     iconContainer: {
         width: 28,
-        height: 28,
+        height: 32,
         alignItems: 'center',
         justifyContent: 'center',
     },
@@ -280,18 +457,51 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
     },
 
-    indicator: {
-        position: 'absolute',
-        top: 12,
-        left: 0,
-        height: 32,
-        borderRadius: 100,
-        backgroundColor: '#E8DEF8',
+    compactLabel: {
+        fontSize: 12,
+        lineHeight: 16,
+        fontWeight: '500',
+        height: 16,
     },
 
-    activeLabel: {
-        fontSize: 12,
-        fontWeight: '600',
-        height: 16,
+    // ----------------------------------------------
+    // CONFIGURAÇÃO HORIZONTAL
+    // ----------------------------------------------
+
+    horizontalItems: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'center',
+        width: '100%',
+        height: BAR_HEIGHT,
+        gap: 8,
+        paddingHorizontal: 12,
+    },
+
+    horizontalTab: {
+        height: HORIZONTAL_INDICATOR_HEIGHT,
+        maxWidth: 180,
+        paddingHorizontal: 16,
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'center',
+        gap: 8,
+        borderRadius: 28,
+        zIndex: 1,
+    },
+
+    horizontalIndicator: {
+        position: 'absolute',
+        top: 4,
+        left: 0,
+        height: HORIZONTAL_INDICATOR_HEIGHT,
+        borderRadius: 28,
+    },
+
+    horizontalLabel: {
+        fontSize: 14,
+        lineHeight: 20,
+        fontWeight: '500',
+        flexShrink: 1,
     },
 });

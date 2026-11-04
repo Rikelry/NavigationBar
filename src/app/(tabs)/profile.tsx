@@ -26,7 +26,7 @@ export default function Home() {
           { color: colors.onSurfaceVariant },
         ]}
       >
-        Material You + React Native
+        Material Community Icons + React Native
       </Text>
     </View>
   );

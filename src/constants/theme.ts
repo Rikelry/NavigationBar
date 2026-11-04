@@ -3,6 +3,7 @@ import { Color } from 'expo-router';
 
 export type AppTheme = {
   primary: string;
+  secondary: string;
   onPrimary: string;
   primaryContainer: string;
   onPrimaryContainer: string;
@@ -18,41 +19,33 @@ export type AppTheme = {
 
 const lightTheme: AppTheme = {
   primary: '#6750A4',
+  secondary: '#625B71',
   onPrimary: '#FFFFFF',
-
   primaryContainer: '#EADDFF',
   onPrimaryContainer: '#21005D',
-
   secondaryContainer: '#E8DEF8',
   onSecondaryContainer: '#1D192B',
-
   background: '#FEF7FF',
   surface: '#FEF7FF',
   onSurface: '#1D1B20',
-
   surfaceVariant: '#E7E0EC',
   onSurfaceVariant: '#49454F',
-
   outline: '#79747E',
 };
 
 const darkTheme: AppTheme = {
   primary: '#D0BCFF',
+  secondary: '#CCC2DC',
   onPrimary: '#381E72',
-
   primaryContainer: '#4F378B',
   onPrimaryContainer: '#EADDFF',
-
   secondaryContainer: '#4A4458',
   onSecondaryContainer: '#E8DEF8',
-
   background: '#141218',
   surface: '#141218',
   onSurface: '#E6E0E9',
-
   surfaceVariant: '#49454F',
   onSurfaceVariant: '#CAC4D0',
-
   outline: '#938F99',
 };
 
@@ -70,6 +63,7 @@ export function useAppTheme(): AppTheme {
 
   return {
     primary: (dynamic.primary ?? fallback.primary) as unknown as string,
+    secondary: (dynamic.secondary ?? fallback.secondary) as unknown as string,
     onPrimary: (dynamic.onPrimary ?? fallback.onPrimary) as unknown as string,
 
     primaryContainer: (dynamic.primaryContainer ?? fallback.primaryContainer) as unknown as string,
