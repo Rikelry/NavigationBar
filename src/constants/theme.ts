@@ -18,35 +18,35 @@ export type AppTheme = {
 };
 
 const lightTheme: AppTheme = {
-  primary: '#6750A4',
-  secondary: '#625B71',
+  primary: '#593923',
   onPrimary: '#FFFFFF',
-  primaryContainer: '#EADDFF',
-  onPrimaryContainer: '#21005D',
-  secondaryContainer: '#E8DEF8',
-  onSecondaryContainer: '#1D192B',
-  background: '#FEF7FF',
-  surface: '#FEF7FF',
-  onSurface: '#1D1B20',
-  surfaceVariant: '#E7E0EC',
-  onSurfaceVariant: '#49454F',
-  outline: '#79747E',
+  secondary: '#755137',
+  primaryContainer: '#F0DFCC',
+  onPrimaryContainer: '#28180D',
+  secondaryContainer: '#E9D8C5',
+  onSecondaryContainer: '#29190F',
+  background: '#F8F5F0',
+  surface: '#F8F5F0',
+  onSurface: '#211A15',
+  surfaceVariant: '#EAE1D7',
+  onSurfaceVariant: '#51463D',
+  outline: '#817366',
 };
 
 const darkTheme: AppTheme = {
-  primary: '#D0BCFF',
-  secondary: '#CCC2DC',
-  onPrimary: '#381E72',
-  primaryContainer: '#4F378B',
-  onPrimaryContainer: '#EADDFF',
-  secondaryContainer: '#4A4458',
-  onSecondaryContainer: '#E8DEF8',
-  background: '#141218',
-  surface: '#141218',
-  onSurface: '#E6E0E9',
-  surfaceVariant: '#49454F',
-  onSurfaceVariant: '#CAC4D0',
-  outline: '#938F99',
+  primary: '#E6BE96',
+  onPrimary: '#402713',
+  secondary: '#D6AD84',
+  primaryContainer: '#593923',
+  onPrimaryContainer: '#F0DFCC',
+  secondaryContainer: '#514032',
+  onSecondaryContainer: '#F0DFCC',
+  background: '#211A15',
+  surface: '#211A15',
+  onSurface: '#F0E7DE',
+  surfaceVariant: '#51463D',
+  onSurfaceVariant: '#D6C5B5',
+  outline: '#A18F7D',
 };
 
 export function useAppTheme(): AppTheme {
@@ -62,23 +62,23 @@ export function useAppTheme(): AppTheme {
   const dynamic = Color.android.dynamic;
 
   return {
-    primary: (dynamic.primary ?? fallback.primary) as unknown as string,
-    secondary: (dynamic.secondary ?? fallback.secondary) as unknown as string,
-    onPrimary: (dynamic.onPrimary ?? fallback.onPrimary) as unknown as string,
+    primary: (fallback.primary ?? dynamic.primary) as unknown as string,
+    secondary: (fallback.secondary ?? dynamic.secondary) as unknown as string,
+    onPrimary: (fallback.onPrimary ?? dynamic.onPrimary) as unknown as string,
 
-    primaryContainer: (dynamic.primaryContainer ?? fallback.primaryContainer) as unknown as string,
-    onPrimaryContainer: (dynamic.onPrimaryContainer ?? fallback.onPrimaryContainer) as unknown as string,
+    primaryContainer: (fallback.primaryContainer ?? dynamic.primaryContainer) as unknown as string,
+    onPrimaryContainer: (fallback.onPrimaryContainer ?? dynamic.onPrimaryContainer) as unknown as string,
 
-    secondaryContainer: (dynamic.secondaryContainer ?? fallback.secondaryContainer) as unknown as string,
-    onSecondaryContainer: (dynamic.onSecondaryContainer ?? fallback.onSecondaryContainer) as unknown as string,
+    secondaryContainer: (fallback.secondaryContainer ?? dynamic.secondaryContainer) as unknown as string,
+    onSecondaryContainer: (fallback.onSecondaryContainer ?? dynamic.onSecondaryContainer) as unknown as string,
 
-    background: (dynamic.background ?? fallback.background) as unknown as string,
-    surface: (dynamic.surface ?? fallback.surface) as unknown as string,
-    onSurface: (dynamic.onSurface ?? fallback.onSurface) as unknown as string,
+    background: (fallback.background ?? dynamic.background) as unknown as string,
+    surface: (fallback.surface ?? dynamic.surface) as unknown as string,
+    onSurface: (fallback.onSurface ?? dynamic.onSurface) as unknown as string,
 
-    surfaceVariant: (dynamic.surfaceVariant ?? fallback.surfaceVariant) as unknown as string,
-    onSurfaceVariant: (dynamic.onSurfaceVariant ?? fallback.onSurfaceVariant) as unknown as string,
+    surfaceVariant: (fallback.surfaceVariant ?? dynamic.surfaceVariant) as unknown as string,
+    onSurfaceVariant: (fallback.onSurfaceVariant ?? dynamic.onSurfaceVariant) as unknown as string,
 
-    outline: (dynamic.outline ?? fallback.outline) as unknown as string,
+    outline: (fallback.outline ?? dynamic.outline) as unknown as string,
   };
 }
